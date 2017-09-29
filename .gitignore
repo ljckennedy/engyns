@@ -1,0 +1,9 @@
+qrspy/README.md
+site/
+qrspy/
+docs/
+.vscode/
+.idea/
+__pycache__/
+*.md
+*.pyc
