@@ -4,6 +4,7 @@ import random
 import json
 import falcon
 import load
+import time
 
 
 class Prioritize(object):
@@ -43,8 +44,11 @@ class Prioritize(object):
                                    'Could not decode the request body. The '
                                    'JSON was incorrect or not encoded as '
                                    'UTF-8.')
-        pprint.pprint(doc)
+        print('In: ')
+        pprint.pprint(doc['QlikSenseEngines'])
         doc['QlikSenseEngines'] = self.balance(doc['QlikSenseEngines'])
+        localtime = time.asctime(time.localtime(time.time()))
+        print('Out: ' + localtime)
         pprint.pprint(doc['QlikSenseEngines'])
         # pprint.pprint(self.loads)
         resp.body = json.dumps(doc)
@@ -58,20 +62,22 @@ class Prioritize(object):
             # hack  need to re-write
             engine = en[en.index('//') + 2:en.rindex(':')]
             server = engine + ':4242'
-            print('Engine is ', server)
-            l = load.QlikLoad(server=server,
-                              client_cert='C:/Dev/code/Python/qmi-qs-mn/client.pem',
-                              client_key='C:/Dev/code/Python/qmi-qs-mn/client_key.pem',
-                              root='C:/Dev/code/Python/qmi-qs-mn/root.pem')
-            self.loads[en] = l.get_load()
+            #print('Engine is ', server)
+            myload = load.QlikLoad(server=server,
+                                   client_cert='C:/Dev/code/Python/qmi-qs-mn/client.pem',
+                                   client_key='C:/Dev/code/Python/qmi-qs-mn/client_key.pem',
+                                   root='C:/Dev/code/Python/qmi-qs-mn/root.pem')
+            self.loads[en] = myload.get_load()
+            pprint.pprint(self.loads[en]['apps']['calls'])
             # this is where I am up to
-            pprint.pprint(self.loads[en]['apps']['in_memory_docs'])
-        themin = min(self.loads[]['apps']['calls'])
-        if random.randint(1, 2) == 2:
-            print('Forced error')
-            return ''
-        else:
-            return qse
+        srt = [item[0] for item in sorted(
+            self.loads.items(), key=lambda k_v: k_v[1]['apps']['calls'], reverse=False)]
+        # pprint.pprint(srt)
+        # if random.randint(1, 2) == 2:
+        #     print('Forced error')
+        #     return ''
+        # else:
+        return srt
 
 
 class Control(object):
